@@ -1,4 +1,5 @@
 import MetricCard from './MetricCard'
+import NowPlayingCard from './NowPlayingCard'
 
 interface DashboardProps {
   metrics: HardwareMetrics
@@ -15,6 +16,9 @@ export default function Dashboard({ metrics }: DashboardProps) {
 
   return (
     <div className="grid grid-cols-2 gap-3">
+      {/* Now Playing — only shown when a game is detected */}
+      {metrics.game && <NowPlayingCard game={metrics.game} />}
+
       {/* CPU Usage */}
       <MetricCard
         label="CPU Usage"

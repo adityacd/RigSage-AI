@@ -7,10 +7,15 @@ import {
   graphics,
   cpuCurrentSpeed
 } from 'systeminformation'
+import { detectRunningGame, type DetectedGame } from './gameDetector'
 
 // Module-level refs — must stay alive or the GC will destroy the tray icon
 let tray: Tray | null = null
 let mainWindow: BrowserWindow | null = null
+
+// Cached game detection result — updated every 5 s on its own interval
+// so it doesn't block the 2-second hardware poll
+let currentGame: DetectedGame | null = null
 
 // ---------------------------------------------------------------------------
 // Window
@@ -123,6 +128,8 @@ export interface HardwareMetrics {
   }
   // null when no GPU is detected
   gpu: { name: string; load: number | null } | null
+  // null when no recognised game process is running
+  game: { name: string; exe: string } | null
 }
 
 /**
@@ -159,7 +166,8 @@ async function collectMetrics(): Promise<HardwareMetrics> {
           // utilizationGpu is undefined on some drivers; coerce to null
           load: controller.utilizationGpu ?? null
         }
-      : null
+      : null,
+    game: currentGame
   }
 }
 
@@ -183,7 +191,17 @@ app.whenReady().then(() => {
     }
   }, 2000)
 
-  app.once('before-quit', () => clearInterval(poll))
+  // Game detection runs on a separate 5-second interval.
+  // si.processes() can take 300–800ms on Windows (WMI query), so keeping it
+  // off the 2-second hardware poll prevents lag in the metrics display.
+  const gamePoll = setInterval(async () => {
+    currentGame = await detectRunningGame()
+  }, 5000)
+
+  app.once('before-quit', () => {
+    clearInterval(poll)
+    clearInterval(gamePoll)
+  })
 })
 
 // Tray apps must keep running even when the dashboard window is closed/hidden
