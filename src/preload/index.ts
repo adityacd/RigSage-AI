@@ -7,6 +7,7 @@ export interface HardwareMetrics {
   cpu: { usage: number; speed: number; temp: number | null }
   ram: { used: number; total: number }
   gpu: { name: string; load: number | null } | null
+  game: { name: string; exe: string } | null
 }
 
 /**
