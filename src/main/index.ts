@@ -7,7 +7,7 @@ import {
   graphics,
   cpuCurrentSpeed
 } from 'systeminformation'
-import { detectRunningGame, type DetectedGame } from './gameDetector'
+import { scanForGame, isGameStillRunning, type DetectedGame } from './gameDetector'
 
 // Module-level refs — must stay alive or the GC will destroy the tray icon
 let tray: Tray | null = null
@@ -191,11 +191,34 @@ app.whenReady().then(() => {
     }
   }, 2000)
 
-  // Game detection runs on a separate 5-second interval.
-  // si.processes() can take 300–800ms on Windows (WMI query), so keeping it
-  // off the 2-second hardware poll prevents lag in the metrics display.
+  // Two-mode game detection — avoids expensive process scans during gameplay:
+  //
+  //  No game detected → full scan every 10 s (tasklist, ~50–150 ms)
+  //  Game detected    → targeted check every 5 s (filtered tasklist, < 10 ms)
+  //
+  // The interval fires every 5 s. The full scan only runs on every other
+  // tick (via the toggle flag) so it effectively runs every 10 s.
+  let runFullScan = true
+
   const gamePoll = setInterval(async () => {
-    currentGame = await detectRunningGame()
+    try {
+      if (currentGame) {
+        // Cheap path: just confirm the known process is still alive
+        const alive = await isGameStillRunning(currentGame.exe)
+        if (!alive) {
+          currentGame = null
+          runFullScan = true  // reset so next tick does a full scan immediately
+        }
+      } else if (runFullScan) {
+        // Expensive path: scan all processes — throttled to every 10 s
+        currentGame = await scanForGame()
+        runFullScan = false
+      } else {
+        runFullScan = true  // allow full scan on the next tick
+      }
+    } catch {
+      // Game detection is non-critical — never let it crash the app
+    }
   }, 5000)
 
   app.once('before-quit', () => {
