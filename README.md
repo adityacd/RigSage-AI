@@ -2,6 +2,37 @@
 
 A Windows system-tray app that shows live PC hardware stats. Portfolio project — clean, interview-ready code.
 
+---
+
+## Project Progress
+
+`[████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 20% complete`
+
+### Foundation
+- [x] Electron scaffold (electron-vite + React + TypeScript)
+- [x] System tray icon with right-click menu and toggle
+- [x] Live hardware metrics — CPU usage, clock, temp, RAM, GPU
+- [x] Secure IPC bridge via contextBridge / preload script
+- [x] Dark theme dashboard UI with card layout (Tailwind CSS)
+
+### Phase 2 — Visuals
+- [ ] Sparkline charts for metric history
+- [ ] Colour-coded alerts when temps/usage are high
+- [ ] Smooth animations and transitions
+
+### Phase 3 — AI Integration
+- [ ] AI-powered game settings recommendations
+- [ ] Per-game profiles and presets
+- [ ] Settings export / import
+
+### Phase 4 — Polish & Release
+- [ ] App packaging and installer (electron-builder)
+- [ ] Auto-launch on Windows startup
+- [ ] Settings screen (polling interval, theme, units)
+- [ ] GitHub release with downloadable .exe
+
+---
+
 ## Stack
 
 | Layer | Tech |
@@ -64,9 +95,3 @@ Metrics are polled every 2 seconds via the `systeminformation` package.
 - All IPC goes through a typed `contextBridge` in `src/preload/index.ts`
 - The renderer only sees `window.api.onMetricsUpdate` — nothing from Node or Electron leaks through
 - Content Security Policy set in `index.html`
-
-## Next Steps (planned)
-
-- [ ] Sparkline charts for metric history
-- [ ] AI-powered game settings recommendations
-- [ ] Per-game profiles
