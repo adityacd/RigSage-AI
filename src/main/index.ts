@@ -1,3 +1,6 @@
+import { config as loadEnv } from 'dotenv'
+loadEnv()
+
 import { app, BrowserWindow, Tray, Menu, nativeImage, screen } from 'electron'
 import { join } from 'path'
 import {
