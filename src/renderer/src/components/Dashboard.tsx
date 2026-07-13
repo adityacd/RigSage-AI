@@ -1,5 +1,4 @@
 import MetricCard from './MetricCard'
-import NowPlayingCard from './NowPlayingCard'
 
 interface DashboardProps {
   metrics: HardwareMetrics
@@ -7,63 +6,61 @@ interface DashboardProps {
 
 export default function Dashboard({ metrics }: DashboardProps) {
   const ramPct = Math.round((metrics.ram.used / metrics.ram.total) * 100)
-
-  // Map temperature onto a 0–100% bar: treat 95°C as full scale (throttle point)
   const tempPct =
     metrics.cpu.temp !== null
       ? Math.min(Math.round((metrics.cpu.temp / 95) * 100), 100)
       : 0
 
   return (
-    <div className="grid grid-cols-2 gap-3">
-      {/* Now Playing — only shown when a game is detected */}
-      {metrics.game && <NowPlayingCard game={metrics.game} />}
-
-      {/* CPU Usage */}
-      <MetricCard
-        label="CPU Usage"
-        value={`${metrics.cpu.usage}%`}
-        sub={`${metrics.cpu.speed} GHz`}
-        percent={metrics.cpu.usage}
-        color="cyan"
-      />
-
-      {/* CPU Temperature
-          Decision point: most Windows systems expose this via ACPI/WMI without
-          admin rights, but it's hardware-dependent. We show N/A gracefully. */}
-      <MetricCard
-        label="CPU Temp"
-        value={metrics.cpu.temp !== null ? `${metrics.cpu.temp}°C` : 'N/A'}
-        sub={metrics.cpu.temp !== null ? 'Sensor active' : 'No sensor data'}
-        percent={tempPct}
-        color="orange"
-        unavailable={metrics.cpu.temp === null}
-      />
-
-      {/* RAM */}
-      <MetricCard
-        label="RAM Usage"
-        value={`${ramPct}%`}
-        sub={`${metrics.ram.used.toFixed(1)} / ${metrics.ram.total.toFixed(0)} GB`}
-        percent={ramPct}
-        color="purple"
-      />
-
-      {/* GPU Load
-          Decision point: utilizationGpu requires driver support.
-          NVIDIA works reliably; AMD/Intel varies. We show N/A if unavailable. */}
-      <MetricCard
-        label="GPU Load"
-        value={
-          metrics.gpu?.load !== null && metrics.gpu?.load !== undefined
-            ? `${metrics.gpu.load}%`
-            : 'N/A'
-        }
-        sub={metrics.gpu?.name ?? 'No GPU detected'}
-        percent={metrics.gpu?.load ?? 0}
-        color="green"
-        unavailable={!metrics.gpu || metrics.gpu.load === null}
-      />
+    <div>
+      <div className="flex items-baseline justify-between mb-[0.9rem]">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.14em]" style={{ color: 'var(--text-dim)' }}>
+          Live system metrics
+        </span>
+        <span className="font-mono text-[11px]" style={{ color: 'var(--text-dimmer)' }}>
+          updated 2s ago
+        </span>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-[10px]">
+        <MetricCard
+          label="CPU Load"
+          icon="⚙️"
+          value={metrics.cpu.usage}
+          unit="%"
+          sub={`${metrics.cpu.speed} GHz`}
+          percent={metrics.cpu.usage}
+          color="default"
+        />
+        <MetricCard
+          label="CPU Temp"
+          icon="🌡️"
+          value={metrics.cpu.temp ?? 0}
+          unit="°C"
+          sub={metrics.cpu.temp !== null ? 'Fan: active' : 'No sensor data'}
+          percent={tempPct}
+          color="amber"
+          unavailable={metrics.cpu.temp === null}
+        />
+        <MetricCard
+          label="GPU Load"
+          icon="🖥️"
+          value={metrics.gpu?.load ?? 0}
+          unit="%"
+          sub={metrics.gpu?.name ?? 'No GPU detected'}
+          percent={metrics.gpu?.load ?? 0}
+          color="sage"
+          unavailable={!metrics.gpu || metrics.gpu.load === null}
+        />
+        <MetricCard
+          label="RAM"
+          icon="💾"
+          value={metrics.ram.used}
+          unit={`/${metrics.ram.total.toFixed(0)} GB`}
+          sub={`${ramPct}% utilised`}
+          percent={ramPct}
+          color="default"
+        />
+      </div>
     </div>
   )
 }

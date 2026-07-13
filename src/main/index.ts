@@ -23,12 +23,14 @@ let currentGame: DetectedGame | null = null
 
 function createWindow(): BrowserWindow {
   const win = new BrowserWindow({
-    width: 380,
-    height: 520,
-    show: false,       // Hidden on launch — tray click reveals it
-    frame: false,      // Frameless so it looks like a native popup widget
-    resizable: false,
-    skipTaskbar: true, // Tray-only app: no entry in the Windows taskbar
+    width: 920,
+    height: 700,
+    minWidth: 480,
+    minHeight: 360,
+    show: false,
+    frame: true,
+    resizable: true,
+    skipTaskbar: false,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,  // Renderer cannot access Node APIs directly
@@ -44,20 +46,6 @@ function createWindow(): BrowserWindow {
   } else {
     win.loadFile(join(__dirname, '../renderer/index.html'))
   }
-
-  // Intercept the close button and hide to tray instead of quitting
-  win.on('close', (e) => {
-    e.preventDefault()
-    win.hide()
-  })
-
-  // Auto-hide when the user clicks outside the popup
-  win.on('blur', () => {
-    // Keep the window open while DevTools are docked to it during development
-    if (!win.webContents.isDevToolsOpened()) {
-      win.hide()
-    }
-  })
 
   return win
 }
@@ -80,7 +68,6 @@ function positionNearTray(win: BrowserWindow): void {
 }
 
 function showWindow(win: BrowserWindow): void {
-  positionNearTray(win)
   win.show()
   win.focus()
 }
@@ -227,7 +214,6 @@ app.whenReady().then(() => {
   })
 })
 
-// Tray apps must keep running even when the dashboard window is closed/hidden
 app.on('window-all-closed', () => {
-  // Intentionally empty — the tray keeps the process alive
+  app.quit()
 })

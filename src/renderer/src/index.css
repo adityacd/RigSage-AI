@@ -1,3 +1,32 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --bg-app: #0a0b0d;
+  --bg-titlebar: #111317;
+  --bg-panel: #15171c;
+  --bg-card: #1a1d23;
+  --border: rgba(255,255,255,0.06);
+  --border-strong: rgba(255,255,255,0.1);
+  --text: #e4e6eb;
+  --text-dim: #6b7280;
+  --text-dimmer: #494e58;
+  --sage: #5eead4;
+  --sage-dim: rgba(94,234,212,0.1);
+  --sage-glow: rgba(94,234,212,0.25);
+  --amber: #fbbf24;
+  --violet: #a78bfa;
+}
+
+body {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+}
+
+.font-mono, .mono {
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+}
+
+.titlebar-drag {
+  -webkit-app-region: drag;
+}

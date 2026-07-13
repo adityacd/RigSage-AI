@@ -1,63 +1,79 @@
-type Color = 'cyan' | 'orange' | 'purple' | 'green'
+type Color = 'sage' | 'amber' | 'default'
 
 interface MetricCardProps {
   label: string
-  value: string
+  icon: string
+  value: number
+  unit: string
   sub: string
   percent: number
-  color: Color
+  color?: Color
   unavailable?: boolean
 }
 
-// Tailwind's JIT scanner requires complete class strings — no dynamic assembly.
-// These objects map each color to its full Tailwind class names.
-const colorClasses: Record<Color, { value: string; bar: string }> = {
-  cyan:   { value: 'text-cyan-400',   bar: 'bg-cyan-400' },
-  orange: { value: 'text-orange-400', bar: 'bg-orange-400' },
-  purple: { value: 'text-purple-400', bar: 'bg-purple-400' },
-  green:  { value: 'text-green-400',  bar: 'bg-green-400' }
+const valueColors: Record<Color, string> = {
+  sage: 'var(--sage)',
+  amber: 'var(--amber)',
+  default: 'var(--text)',
+}
+
+const barColors: Record<Color, string> = {
+  sage: 'var(--sage)',
+  amber: 'var(--amber)',
+  default: 'var(--sage)',
+}
+
+function formatValue(v: number): string {
+  return Number.isInteger(v) ? String(v) : v.toFixed(1)
 }
 
 export default function MetricCard({
   label,
+  icon,
   value,
+  unit,
   sub,
   percent,
-  color,
-  unavailable = false
+  color = 'default',
+  unavailable = false,
 }: MetricCardProps) {
-  const { value: valueClass, bar: barClass } = colorClasses[color]
-
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex flex-col gap-2">
-      {/* Metric label */}
-      <span className="text-gray-400 text-xs font-medium uppercase tracking-widest">
-        {label}
-      </span>
+    <div
+      className="relative overflow-hidden rounded-lg border"
+      style={{ background: 'var(--bg-card)', borderColor: 'var(--border)', padding: '14px 16px' }}
+    >
+      {/* Bottom progress bar */}
+      {!unavailable && (
+        <div
+          className="absolute bottom-0 left-0 h-[2px] transition-all duration-700"
+          style={{
+            width: `${Math.min(percent, 100)}%`,
+            background: barColors[color],
+            opacity: 0.7,
+          }}
+        />
+      )}
 
-      {/* Main value — greyed out when the sensor is unavailable */}
-      <span
-        className={`text-2xl font-bold tabular-nums ${
-          unavailable ? 'text-gray-600' : valueClass
-        }`}
+      <div className="flex items-center justify-between mb-[10px]">
+        <span className="text-[10px] font-semibold uppercase tracking-[0.1em]" style={{ color: 'var(--text-dim)' }}>
+          {label}
+        </span>
+        <span className="text-[13px]" style={{ opacity: 0.6 }}>{icon}</span>
+      </div>
+
+      <div
+        className="font-mono text-[22px] font-semibold leading-none mb-1"
+        style={{ color: unavailable ? 'var(--text-dimmer)' : valueColors[color] }}
       >
-        {value}
-      </span>
-
-      {/* Usage bar — hidden when unavailable */}
-      <div className="h-1.5 rounded-full bg-gray-800 overflow-hidden">
-        {!unavailable && (
-          <div
-            className={`h-full rounded-full transition-all duration-700 ease-out ${barClass}`}
-            style={{ width: `${Math.min(percent, 100)}%` }}
-          />
+        {unavailable ? 'N/A' : (
+          <>
+            {formatValue(value)}
+            <span className="text-xs font-normal ml-[2px]" style={{ color: 'var(--text-dim)' }}>{unit}</span>
+          </>
         )}
       </div>
 
-      {/* Sub-label (clock speed, GB used, GPU name, etc.) */}
-      <span className="text-gray-500 text-xs truncate" title={sub}>
-        {sub}
-      </span>
+      <div className="font-mono text-[10px] truncate" style={{ color: 'var(--text-dimmer)' }}>{sub}</div>
     </div>
   )
 }
